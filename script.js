@@ -15,7 +15,6 @@ let currentPage = 1;
 const booksPerPage = 10;
 const API_URI = "https://api.freeapi.app/api/v1/public/books?page=";
 
-// Fetch API
 const options = {
     method: 'GET',
     headers: { accept: 'application/json' }
@@ -25,7 +24,7 @@ const fetchBooks = async (page = 1) => {
     try {
         const response = await fetch(`${API_URI}${page}`, options);
         const data = await response.json();
-        AllBooks = data.data.data; // Books are in data.data.data
+        AllBooks = data.data.data;
         updateDOM(AllBooks);
         updatePagination(data.data.totalPages, page);
     } catch (error) {
@@ -33,15 +32,18 @@ const fetchBooks = async (page = 1) => {
     }
 };
 
-// Update DOM with book data
 const updateDOM = (books) => {
     DOM.bookContainer.innerHTML = '';
     
     books.forEach(book => {
         const bookItem = document.createElement('div');
         bookItem.classList.add('book-item');
+
+        const thumbnail = book.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') || 'https://via.placeholder.com/100x150';
+        const infoLink = book.volumeInfo.infoLink?.replace('http://', 'https://') || '#';
+
         bookItem.innerHTML = `
-            <img src="${book.volumeInfo.imageLinks?.thumbnail || 'https://via.placeholder.com/100x150'}" alt="${book.volumeInfo.title}">
+            <img src="${thumbnail}" alt="${book.volumeInfo.title}">
             <div class="book-details">
                 <h2>${book.volumeInfo.title}</h2>
                 <p><strong>Author:</strong> ${book.volumeInfo.authors?.[0] || 'Unknown'}</p>
@@ -50,7 +52,7 @@ const updateDOM = (books) => {
             </div>
         `;
         bookItem.addEventListener('click', () => {
-            window.open(book.volumeInfo.infoLink, '_blank');
+            window.open(infoLink, '_blank');
         });
         DOM.bookContainer.appendChild(bookItem);
     });
@@ -81,6 +83,15 @@ DOM.sortSelect.addEventListener('change', (e) => {
         }
     });
     updateDOM(sortedBooks);
+});
+
+// Toggle View functionality
+DOM.viewToggle.addEventListener('change', () => {
+    if (DOM.viewToggle.checked) {
+        DOM.bookContainer.classList.add('grid-view');
+    } else {
+        DOM.bookContainer.classList.remove('grid-view');
+    }
 });
 
 // Pagination
